@@ -46,3 +46,4 @@ int main()
 	fun(0, 0, 0, 0);
 	cout <<max_s<< endl;
 }
+end
