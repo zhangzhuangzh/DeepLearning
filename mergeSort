@@ -1,0 +1,178 @@
+#include <stdio.h>
+#include <iostream>
+#include <stdlib.h>
+#include <math.h>
+#include <time.h>
+using namespace std;
+
+#define NUM 300000
+
+void segmentedBitonicSort(float* data, int* seg_id, int* seg_start, int n, int m);
+void BitonicSort(float* start, int n);
+void BitonicMerge(float* start, int n);
+void merge_sort(float *list, int length);
+void reverseArray(float *list,int length);
+void writeFile(float *data);
+
+
+
+int main()
+{
+	float data[NUM];
+	int i,duration; //计时
+	clock_t start, finish;	
+	int seg_id[NUM];
+	int seg_start[3000] = {0,NUM/3,NUM/2,NUM};
+	int n = NUM;
+	int m = 3;
+    for(i = 0;i < n;++i)
+	{
+		data[i] = rand()%99999999*0.001;  //生成测试数据
+	}
+//	data[0] = sqrt(-1.f);
+//	data[3] = sqrt(-1.f);
+	for(i = 0;i < NUM/3;++i)
+	{
+		seg_id[i] = 0;
+	}
+	for(i = 0;i < NUM/2;++i)
+	{
+		seg_id[i] = 1;
+	}
+	for(i = NUM/2;i < NUM;++i)
+	{
+		seg_id[i] = 3;
+	}
+	
+	start = clock();
+	segmentedBitonicSort(data,seg_id,seg_start,n,m);
+	finish = clock();
+    duration = (finish - start); 
+	printf( "final result is\n");
+	
+	/* for(i = 0; i < NUM; ++i)
+		cout<<data[i]<<",";
+	cout<<endl; */
+	
+	writeFile(data);
+	cout<<start<<" "<<finish<<endl;
+	cout<<CLOCKS_PER_SEC<<endl;
+	printf( "running time is: %d ms\n", duration );
+	return 0;
+}
+
+void writeFile(float *data)
+{
+	FILE* fp;
+	int i;
+	fp=fopen("OutPutData.txt","w+");
+	for (i=0;i<NUM;i++)
+	{
+		fprintf(fp,"%f ",*(data+i));
+		if(i%10 == 0 && i != 0)
+			fprintf(fp,"\n",NULL);
+	}
+	fclose(fp);
+}
+
+void segmentedBitonicSort(float* data, int* seg_id, int* seg_start, int n, int m)
+{
+	int i,j,k;
+	int tmp;
+	tmp = seg_id[0];
+	for(i = 1;i < n;++i)
+	{
+		k = 1;
+		while(tmp == seg_id[i])
+		{
+			k++;
+			i++;
+		}
+		tmp = seg_id[i];
+		BitonicSort(data+i-k, k);
+	}
+}
+
+void BitonicSort(float* start, int n)/*双调排序*/
+{
+	int i,j,k;
+	float tmp[NUM];
+	int num = 1;
+	while(num < n)
+		num *= 2;
+	for(i = 0;i < n;++i)
+		tmp[i] = start[i];
+	for(i = n;i < num;++i)
+		tmp[i] = 0;	
+	BitonicMerge(tmp,num);	
+	int step = num/2;  
+    for (;step > 0 ;step /= 2) 
+	{  
+        for (i = 0; i < num; i += 2*step) 
+		{  
+            for (k = 0; k < step; ++k) 
+			{  
+                if(tmp[i + k] > tmp[i + step +k])
+					swap(tmp[i +k], tmp[i+ step + k]);
+            }  
+        }  
+    }	
+	j = 0;
+	for(i = 0;i < num;++i)
+	{
+		if(tmp[i] != 0)
+			start[j++] = tmp[i];
+	}	
+}
+
+void BitonicMerge(float* start, int n)/*生成双调序列*/
+{
+	merge_sort(start,n/2);
+	merge_sort(start + n/2,n/2);
+	reverseArray(start + n/2,n/2);
+}
+
+void reverseArray(float *list,int length)/*反向排序*/
+{
+	float tmp;
+	int i = 0;
+	for(i = 0;i < length/2;++i)
+	{
+		tmp = list[i];
+		list[i] = list[length - i - 1];
+		list[length - i - 1] = tmp;
+	}
+}
+
+void merge_sort(float *list, int length)/*归并排序*/
+{
+    int i, left_min, left_max, right_min, right_max;
+	int  next;
+    float tmp[NUM];
+    if (tmp == NULL)
+    {
+        fputs("Error: out of memory\n", stderr);
+        abort();
+    }
+    for (i = 1; i < length; i *= 2) // i为步长，1,2,4,8……
+    {
+        for (left_min = 0; left_min < length - i; left_min = right_max)
+        {
+            right_min = left_max = left_min + i;
+            right_max = left_max + i;
+
+            if (right_max > length)
+                right_max = length;
+
+            next = 0;
+            while (left_min < left_max && right_min < right_max)
+                tmp[next++] = list[left_min] > list[right_min] ? list[right_min++] : list[left_min++];
+
+            while (left_min < left_max)
+                list[--right_min] = list[--left_max];
+
+            while (next > 0)
+                list[--right_min] = tmp[--next];
+        }
+    }
+}
