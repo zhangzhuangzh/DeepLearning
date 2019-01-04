@@ -19,8 +19,6 @@ import matplotlib.pyplot as plt
 
 
 
-
-
 # ## 加载和准备数据
 # 
 # 构建神经网络的关键一步是正确地准备数据。不同尺度级别的变量使网络难以高效地掌握正确的权重。我们在下方已经提供了加载和准备数据的代码。你很快将进一步学习这些代码！
@@ -46,7 +44,7 @@ rides.head()
 # In[4]:
 
 rides[:24*10].plot(x='dteday', y='cnt')
-
+# <matplotlib.axes._subplots.AxesSubplot at 0x1137fa860>
 
 # ### 虚拟变量（哑变量）
 # 
@@ -391,3 +389,4 @@ _ = ax.set_xticklabels(dates[12::24], rotation=45)
 # 
 # #### 请将你的答案填写在下方
 # 
+plt.show()
