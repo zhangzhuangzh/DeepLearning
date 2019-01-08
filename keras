@@ -1,0 +1,66 @@
+# https://github.com/keras-team/keras/blob/master/README.md
+
+import pandas as pd
+from keras.models import Sequential
+from keras.layers import Dense
+import matplotlib.pyplot as plt
+import numpy as np
+np.random.seed(1337)  # for reproducibility
+
+
+data_path = 'C2_TRAINING_SET.csv'
+
+rides = pd.read_csv(data_path)
+
+# In[3]:
+
+rides.head()
+Y = rides['charge']
+fields_to_drop = ['n', 'charge']
+X = rides.drop(fields_to_drop, axis=1)
+# X.head()
+
+
+# plt.scatter(X, Y)
+# plt.show()
+
+X_train, Y_train = X[:792], Y[:792]     # first 160 data points
+X_test, Y_test = X[792:], Y[792:]       # last 40 data points
+
+# build a neural network from the 1st layer to the last layer
+model = Sequential()
+model.add(Dense(units=1, input_dim=63)) # 一层隐藏层
+
+# choose loss function and optimizing method
+model.compile(loss='mse', optimizer='sgd')  # 优化器：Stochastic Gradient Descent 随机梯度下降
+
+# training
+print('Training -----------')
+for step in range(50000):
+    cost = model.train_on_batch(X_train, Y_train)
+    if step % 100 == 0:
+        print('train cost: ', cost)
+
+# test
+print('\nTesting ------------')
+cost = model.evaluate(X_test, Y_test, batch_size=40) # 评价
+print('test cost:', cost)
+W, b = model.layers[0].get_weights()
+print('Weights=', W, '\nbiases=', b)
+
+# plotting the prediction
+Y_pred = model.predict(X_test)
+
+# plt.scatter(X_test, Y_test)
+# plt.plot(X_test, Y_pred)
+# plt.show()
+
+
+
+totalError = 0.0
+count = 0
+for i,j in zip(Y_test,Y_pred):
+    print ("real=", i, "    predict=", j,"   || error=", abs(i - j))
+    totalError += abs(i - j)
+    count += 1
+print("mean abs error = ", totalError/count)
