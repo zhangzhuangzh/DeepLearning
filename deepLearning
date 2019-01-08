@@ -25,7 +25,7 @@ import matplotlib.pyplot as plt
 
 # In[2]:
 
-data_path = 'Bike-Sharing-Dataset/hour.csv'
+data_path = 'Bike-Sharing-Dataset/C2_TRAINING_SET.csv'
 
 rides = pd.read_csv(data_path)
 
@@ -37,13 +37,13 @@ rides.head()
 
 # ## 数据简介
 # 
-# 此数据集包含的是从 2011 年 1 月 1 日到 2012 年 12 月 31 日期间每天每小时的骑车人数。骑车用户分成临时用户和注册用户，cnt 列是骑车用户数汇总列。你可以在上方看到前几行数据。
+# 此数据集包含的是从 2011 年 1 月 1 日到 2012 年 12 月 31 日期间每天每小时的骑车人数。骑车用户分成临时用户和注册用户，charge 列是骑车用户数汇总列。你可以在上方看到前几行数据。
 # 
 # 下图展示的是数据集中前 10 天左右的骑车人数（某些天不一定是 24 个条目，所以不是精确的 10 天）。你可以在这里看到每小时租金。这些数据很复杂！周末的骑行人数少些，工作日上下班期间是骑行高峰期。我们还可以从上方的数据中看到温度、湿度和风速信息，所有这些信息都会影响骑行人数。你需要用你的模型展示所有这些数据。
 
 # In[4]:
 
-rides[:24*10].plot(x='dteday', y='cnt')
+rides[:24*10].plot(x='n', y='charge')
 # <matplotlib.axes._subplots.AxesSubplot at 0x1137fa860>
 
 # ### 虚拟变量（哑变量）
@@ -52,15 +52,15 @@ rides[:24*10].plot(x='dteday', y='cnt')
 
 # In[5]:
 
-dummy_fields = ['season', 'weathersit', 'mnth', 'hr', 'weekday']
-for each in dummy_fields:
-    dummies = pd.get_dummies(rides[each], prefix=each, drop_first=False)
-    rides = pd.concat([rides, dummies], axis=1)
-
-fields_to_drop = ['instant', 'dteday', 'season', 'weathersit', 
-                  'weekday', 'atemp', 'mnth', 'workingday', 'hr']
+# dummy_fields = ['season', 'weathersit', 'mnth', 'hr', 'weekday']
+# for each in dummy_fields:
+#     dummies = pd.get_dummies(rides[each], prefix=each, drop_first=False)
+#     rides = pd.concat([rides, dummies], axis=1) 连接两个数组
+#
+fields_to_drop = ['n']
 data = rides.drop(fields_to_drop, axis=1)
 data.head()
+
 
 
 # ### 调整目标变量
@@ -71,7 +71,11 @@ data.head()
 
 # In[6]:
 
-quant_features = ['casual', 'registered', 'cnt', 'temp', 'hum', 'windspeed']
+quant_features = ['p1', 'p2', 'p3', 'p4', 'p5', 'p6', 'p7', 'p8', 'p9', 'p10', 'p11', 'p12', 'p13', 'p14', 'p15',
+                  'p16', 'p17', 'p18', 'p19', 'p20', 'p21', 'p22', 'p23', 'p24', 'p25', 'p26', 'p27', 'p28', 'p29',
+                  'p30', 'p31', 'p32', 'p33', 'p34', 'p35', 'p36', 'p37', 'p38', 'p39', 'p40', 'p41', 'p42', 'p43',
+                  'p44', 'p45', 'p46', 'p47', 'p48', 'p49', 'p50', 'p51', 'p52', 'p53', 'p54', 'p55', 'p56', 'p57',
+                  'p58', 'p59', 'p60', 'p61', 'p62', 'p63', 'charge']
 # Store scalings in a dictionary so we can convert back later
 scaled_features = {}
 for each in quant_features:
@@ -87,13 +91,13 @@ for each in quant_features:
 # In[7]:
 
 # Save data for approximately the last 21 days 
-test_data = data[-21*24:]
+test_data = data[-200:]
 
 # Now remove the test data from the data set 
-data = data[:-21*24]
+data = data[:792]
 
 # Separate the data into features and targets
-target_fields = ['cnt', 'casual', 'registered']
+target_fields = ['charge']
 features, targets = data.drop(target_fields, axis=1), data[target_fields]
 test_features, test_targets = test_data.drop(target_fields, axis=1), test_data[target_fields]
 
@@ -103,8 +107,8 @@ test_features, test_targets = test_data.drop(target_fields, axis=1), test_data[t
 # In[8]:
 
 # Hold out the last 60 days or so of the remaining data as a validation set
-train_features, train_targets = features[:-60*24], targets[:-60*24]
-val_features, val_targets = features[-60*24:], targets[-60*24:]
+train_features, train_targets = features[:-200], targets[:-200]
+val_features, val_targets = features[-200:], targets[-200:]
 
 
 # ## 开始构建网络
@@ -202,7 +206,7 @@ class NeuralNetwork(object):
             # Weight step (input to hidden)
             delta_weights_i_h += hidden_error_term * X[:, None]
             # Weight step (hidden to output)
-            delta_weights_h_o += output_error_term * hidden_outputs[:,None]
+            delta_weights_h_o += output_error_term * hidden_outputs[:, None]
 
         # TODO: Update the weights - Replace these values with your calculations.
         self.weights_hidden_to_output += self.lr * delta_weights_h_o / n_records  # update hidden-to-output weights with gradient descent step
@@ -258,7 +262,7 @@ class TestMethods(unittest.TestCase):
     
     def test_data_path(self):
         # Test that file path to dataset has been unaltered
-        self.assertTrue(data_path.lower() == 'bike-sharing-dataset/hour.csv')
+        self.assertTrue(data_path.lower() == 'bike-sharing-dataset/c2_training_set.csv')
         
     def test_data_loaded(self):
         # Test that data frame loaded
@@ -327,7 +331,7 @@ import sys
 ### Set the hyperparameters here ###
 iterations = 5000
 learning_rate = 0.7
-hidden_nodes = 14
+hidden_nodes = 60
 output_nodes = 1
 
 N_i = train_features.shape[1]
@@ -337,14 +341,16 @@ losses = {'train':[], 'validation':[]}
 for ii in range(iterations):
     # Go through a random batch of 128 records from the training data set
     batch = np.random.choice(train_features.index, size=128)
-    X, y = train_features.ix[batch].values, train_targets.ix[batch]['cnt']
+    X, y = train_features.ix[batch].values, train_targets.ix[batch]['charge']
                              
     network.train(X, y)
     
     # Printing out the training progress
-    train_loss = MSE(network.run(train_features).T, train_targets['cnt'].values)
-    val_loss = MSE(network.run(val_features).T, val_targets['cnt'].values)
-    sys.stdout.write("\rProgress: {:2.1f}".format(100 * ii/float(iterations))                      + "% ... Training loss: " + str(train_loss)[:5]                      + " ... Validation loss: " + str(val_loss)[:5])
+    train_loss = MSE(network.run(train_features).T, train_targets['charge'].values)
+    val_loss = MSE(network.run(val_features).T, val_targets['charge'].values)
+    sys.stdout.write("\rProgress: {:2.1f}".format(100 * ii/float(iterations))                      +
+                     "% ... Training loss: " + str(train_loss)[:5]                      +
+                     " ... Validation loss: " + str(val_loss)[:5])
     sys.stdout.flush()
     
     losses['train'].append(train_loss)
@@ -367,14 +373,14 @@ _ = plt.ylim()
 
 fig, ax = plt.subplots(figsize=(8,4))
 
-mean, std = scaled_features['cnt']
+mean, std = scaled_features['charge']
 predictions = network.run(test_features).T*std + mean
 ax.plot(predictions[0], label='Prediction')
-ax.plot((test_targets['cnt']*std + mean).values, label='Data')
+ax.plot((test_targets['charge']*std + mean).values, label='n')
 ax.set_xlim(right=len(predictions))
 ax.legend()
 
-dates = pd.to_datetime(rides.ix[test_data.index]['dteday'])
+dates = pd.to_datetime(rides.ix[test_data.index]['n'])
 dates = dates.apply(lambda d: d.strftime('%b %d'))
 ax.set_xticks(np.arange(len(dates))[12::24])
 _ = ax.set_xticklabels(dates[12::24], rotation=45)
