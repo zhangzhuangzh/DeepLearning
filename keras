@@ -2,65 +2,63 @@
 
 import pandas as pd
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, Dropout, Activation
+from keras.optimizers import SGD
+
 import matplotlib.pyplot as plt
 import numpy as np
 np.random.seed(1337)  # for reproducibility
 
 
 data_path = 'C2_TRAINING_SET.csv'
-
 rides = pd.read_csv(data_path)
-
-# In[3]:
 
 rides.head()
 Y = rides['charge']
 fields_to_drop = ['n', 'charge']
 X = rides.drop(fields_to_drop, axis=1)
-# X.head()
 
-
-# plt.scatter(X, Y)
+# plt.scatter(rides['n'], rides['charge'])
+# plt.title('training')
 # plt.show()
 
-X_train, Y_train = X[:792], Y[:792]     # first 160 data points
-X_test, Y_test = X[792:], Y[792:]       # last 40 data points
+X_train, Y_train = X[:792], Y[:792]
+X_test, Y_test = X[792:], Y[792:]
 
 # build a neural network from the 1st layer to the last layer
 model = Sequential()
-model.add(Dense(units=1, input_dim=63)) # 一层隐藏层
+model.add(Dense(units=80, input_dim=63, kernel_initializer="uniform", activation="relu")) # 一层隐藏层
+# model.add(Dropout(0.8))
+model.add(Dense(units=80, kernel_initializer="uniform", activation="relu")) # 第二层隐藏层
+model.add(Dense(units=1, kernel_initializer='uniform')) # 输出层1,
+# 没有激活函数用于输出层，因为这是一个回归问题，我们希望直接预测数值，而不需要采用激活函数进行变换。
+print(model.summary())
 
-# choose loss function and optimizing method
-model.compile(loss='mse', optimizer='sgd')  # 优化器：Stochastic Gradient Descent 随机梯度下降
+# # choose loss function and optimizing method
+model.compile(loss='mse', optimizer='adam')
+# 优化器：Stochastic Gradient Descent 随机梯度下降
 
-# training
-print('Training -----------')
-for step in range(50000):
-    cost = model.train_on_batch(X_train, Y_train)
-    if step % 100 == 0:
-        print('train cost: ', cost)
+train_history = model.fit(x=X_train, y=Y_train, validation_split=0.2, epochs=3000, batch_size=300, verbose=2)
 
-# test
-print('\nTesting ------------')
-cost = model.evaluate(X_test, Y_test, batch_size=40) # 评价
-print('test cost:', cost)
-W, b = model.layers[0].get_weights()
-print('Weights=', W, '\nbiases=', b)
+# show_train_history(train_history, 'acc', 'val_acc')
 
-# plotting the prediction
+scores = model.evaluate(x=X_test, y=Y_test)
+
 Y_pred = model.predict(X_test)
-
-# plt.scatter(X_test, Y_test)
-# plt.plot(X_test, Y_pred)
-# plt.show()
-
-
-
 totalError = 0.0
 count = 0
-for i,j in zip(Y_test,Y_pred):
-    print ("real=", i, "    predict=", j,"   || error=", abs(i - j))
+for i, j in zip(Y_test, Y_pred):
+    # print ("real=", i, "    predict=", j, "   || error=", abs(i - j))
     totalError += abs(i - j)
     count += 1
 print("mean abs error = ", totalError/count)
+
+axis_x = np.arange(len(Y_pred))
+axis_y1 = Y_pred
+axis_y2 = Y_test
+p1 = plt.scatter(axis_x, axis_y1, color='red',  label='pred')
+p2 = plt.scatter(axis_x, axis_y2, color='blue', label='real')
+plt.legend([p1, p2], ['pred', 'real'], loc='lower right', scatterpoints=1)
+plt.title('compare')
+plt.show()
+
