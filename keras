@@ -4,6 +4,7 @@ import pandas as pd
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation
 from keras.optimizers import SGD
+from keras.optimizers import Adam
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -27,18 +28,21 @@ X_test, Y_test = X[792:], Y[792:]
 
 # build a neural network from the 1st layer to the last layer
 model = Sequential()
-model.add(Dense(units=80, input_dim=63, kernel_initializer="uniform", activation="relu")) # 一层隐藏层
+model.add(Dense(units=70, input_dim=63, kernel_initializer="random_uniform", activation="relu")) # 一层隐藏层
 # model.add(Dropout(0.8))
-model.add(Dense(units=80, kernel_initializer="uniform", activation="relu")) # 第二层隐藏层
-model.add(Dense(units=1, kernel_initializer='uniform')) # 输出层1,
+model.add(Dense(units=40, kernel_initializer="random_uniform", activation="linear")) # 第二层隐藏层
+model.add(Dense(units=10, kernel_initializer="random_uniform", activation="relu")) # 第三层隐藏层
+model.add(Dense(units=1, kernel_initializer='random_uniform')) # 输出层1,
 # 没有激活函数用于输出层，因为这是一个回归问题，我们希望直接预测数值，而不需要采用激活函数进行变换。
 print(model.summary())
 
 # # choose loss function and optimizing method
-model.compile(loss='mse', optimizer='adam')
+sgd = SGD(lr=0.01, momentum=0, decay=0, nesterov=False)
+adam = Adam(lr=0.01, beta_1=0.8, beta_2=0.999, epsilon=None, decay=0, amsgrad=False)
+model.compile(loss='mse', optimizer='adam', metrics=['acc'])
 # 优化器：Stochastic Gradient Descent 随机梯度下降
 
-train_history = model.fit(x=X_train, y=Y_train, validation_split=0.2, epochs=3000, batch_size=300, verbose=2)
+train_history = model.fit(x=X_train, y=Y_train, validation_split=0.2, epochs=2000, batch_size=300, verbose=2)
 
 # show_train_history(train_history, 'acc', 'val_acc')
 
