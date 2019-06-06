@@ -39,24 +39,24 @@ target_values = output_data[:n_train]
 print('Setting up the Kriging Model')
 
 # Now that we have our initial data, we can create an instance of a kriging model
-k = regression_kriging(training_data, target_values, name='simple', testPoints=n_train)
+k = regression_kriging(training_data, target_values, testPoints=n_train)
 k.train(optimizer='pso')
-k1 = kriging(training_data, target_values, name='simple', testPoints=n_train)
-k1.train(optimizer='pso')
+
 print(k.Lambda)
 k.snapshot()
 
 
 for i in range(1):
-    newpoints = k.infill(35)
-    for point in newpoints:
+    # newpoints = k.infill(n_train)
+    # for point in newpoints:
+    for point in range(n_train):
         print('Adding point {}'.format(point))
         # newValue = testfun(point)[0]
-        newValue = target_values[point]
+        newValue = training_data[point]
         k.addPoint(point, newValue)
-        k1.addPoint(point, newValue)
+
     k.train()
-    k1.train()
+
     # k.snapshot()
 #
 # # #And plot the model
@@ -64,4 +64,3 @@ for i in range(1):
 print('Now plotting final results...')
 print(k.Lambda)
 k.plot(show=False)
-k1.plot()
