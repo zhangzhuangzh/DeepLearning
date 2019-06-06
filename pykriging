@@ -52,8 +52,9 @@ for i in range(1):
     for point in range(n_train):
         print('Adding point {}'.format(point))
         # newValue = testfun(point)[0]
-        newValue = training_data[point]
-        k.addPoint(point, newValue)
+        p = training_data[point]
+        newValue = target_values[point]
+        k.addPoint(p, newValue)
 
     k.train()
 
