@@ -30,7 +30,7 @@ testout_data=file_contents[:,30]
 input_data = file_contents[:,0:input_end_column+1]
 output_data = file_contents[:,30]
 
-n_train = 3500
+n_train = 35
 
 training_data = input_data[:n_train,:]
 print("(n_samples, n_features) =", training_data.shape)
@@ -39,19 +39,20 @@ target_values = output_data[:n_train]
 print('Setting up the Kriging Model')
 
 # Now that we have our initial data, we can create an instance of a kriging model
-k = regression_kriging(training_data, target_values, name='simple', testPoints=3500)
+k = regression_kriging(training_data, target_values, name='simple', testPoints=n_train)
 k.train(optimizer='pso')
-k1 = kriging(training_data, target_values, name='simple', testPoints=3500)
+k1 = kriging(training_data, target_values, name='simple', testPoints=n_train)
 k1.train(optimizer='pso')
 print(k.Lambda)
 k.snapshot()
 
 
 for i in range(1):
-    newpoints = k.infill(5)
+    newpoints = k.infill(35)
     for point in newpoints:
         print('Adding point {}'.format(point))
-        newValue = testfun(point)[0]
+        # newValue = testfun(point)[0]
+        newValue = target_values[point]
         k.addPoint(point, newValue)
         k1.addPoint(point, newValue)
     k.train()
