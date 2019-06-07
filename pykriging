@@ -65,3 +65,5 @@ for i in range(1):
 print('Now plotting final results...')
 print(k.Lambda)
 k.plot(show=False)
+
+print(k.predict(training_data[0]))
